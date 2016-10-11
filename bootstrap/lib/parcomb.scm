@@ -48,7 +48,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
       (bad (failure '(("not expecting empty input")) in))
       (:succeed: in ok bad)))
 
-(define ((:pred: pred) in ok bad)
+(define* ((:pred: pred) in ok bad)
   (cond ((input-null? in)
          (:nempty: in ok bad))
         ((pred (input-car in))
@@ -60,7 +60,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
                            ("pred is:" . ,pred))))
                        in)))))
 
-(define ((:npred: pred) in ok bad)
+(define* ((:npred: pred) in ok bad)
   (cond ((input-null? in)
          (:nempty: in ok bad))
         ((pred (input-car in))
@@ -72,7 +72,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
          (ok (success (list (input-car in))
                       (input-cdr in))))))
 
-(define (((:cmp: =) x) in ok bad)
+(define* (((:cmp: =) x) in ok bad)
   (cond ((input-null? in)
          (:nempty: in ok bad))
         ((= x (input-car in))
@@ -89,7 +89,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
 (define :eqv: (:cmp: eqv?))
 (define :eq: (:cmp: eq?))
 
-(define (((:ncmp: =) x) in ok bad)
+(define* (((:ncmp: =) x) in ok bad)
   (cond ((input-null? in)
          (:nempty: in ok bad))
         ((= x (input-car in))
@@ -107,7 +107,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
 (define :neq: (:ncmp: eq?))
 
 (define (:seq: . pars)
-  (define ((:seq2: par1 par2) in ok bad)
+  (define* ((:seq2: par1 par2) in ok bad)
     (par1 in
           (lambda (s1)
             (par2 (pending-input s1)
@@ -121,7 +121,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
   (fold-right :seq2: :succeed: pars))
 
 (define (:alt: . pars)
-  (define ((:alt2: par1 par2) in ok bad)
+  (define* ((:alt2: par1 par2) in ok bad)
     (par1 in
           ok
           (lambda (f1)
@@ -148,7 +148,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
 (define (:+: par)
   (:seq: par (:*: par)))
 
-(define (((:><: fmatch fwhy) par) in ok bad)
+(define* (((:><: fmatch fwhy) par) in ok bad)
   (par in
        (lambda (s)
          (ok (success (fmatch (success-match s))

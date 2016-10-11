@@ -1,6 +1,16 @@
+(define-syntax define*
+  (syntax-rules ()
+    ((define* (spec . args)
+       body1 body2 ...)
+     (define* spec
+       (lambda args
+         body1 body2 ...)))
+    ((define* name value)
+     (define name value))))
+
 (define (id x) x)
 
-(define ((constant x) y) x)
+(define* ((constant x) y) x)
 
 (define (negate pred)
   (lambda (x)

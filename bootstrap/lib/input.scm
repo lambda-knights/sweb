@@ -30,12 +30,37 @@ restringirse a usar las siguientes formas y procedimientos:
  : Procedimiento para crear una entrada a partir de una cadena de caracteres.
 |#
 
+;;; Algunas implementaciones de Scheme no proveen una implementación de flujos
+;;; sin embargo, desde R5RS el transformador syntax-rules y los mecanismos de
+;;; delay/force son obligatorios. A continuación se implementan los flujos de
+;;; manera portable.
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((cons-stream element stream)
+     (cons element (delay stream)))))
+
+(define stream-null '())
+
+(define (stream-null? x)
+  (null? x))
+
+(define (stream? x)
+  (or (stream-null? x)
+      (pair? x)))
+
+(define (stream-car stream)
+  (car stream))
+
+(define (stream-cdr stream)
+  (force (cdr stream)))
+
+;;; A continuación la implementación de entradas basadas en flujos
 (define-syntax input-cons
   (syntax-rules ()
     ((input-cons x in)
      (cons-stream x in))))
 
-(define input-null (stream))
+(define input-null stream-null)
 
 (define (input-null? x)
   (stream-null? x))
