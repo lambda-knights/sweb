@@ -8,7 +8,7 @@ El lenguaje de la implementación de los archivos del proceso de bootstrapping d
 
 Para más información sobre programación literaria puedes consultar [esta página](https://www.google.com.mx/search?&q=literate+programming)
 
-Para más información sobre la sintaxis que utiliza `sweb` puedes consultar [esta página](https://www.google.com.mx/search?&q=noweb+literate+programming)
+Para más información sobre la sintaxis que utiliza `sweb` puedes consultar [esta página](https://www.google.com.mx/search?&q=cweb+literate+programming)
 
 Para más información sobre scheme puedes consultar [esta página](https://mitpress.mit.edu/sicp/full-text/book/book.html), [esta otra página](http://srfi.schemers.org/) y [este documento](http://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf)
 
