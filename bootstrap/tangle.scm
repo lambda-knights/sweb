@@ -1,46 +1,33 @@
 #|
+Esta es la implementación del procedimiento `tangle`, este tiene el objetivo de
+tomar un archivo de entrada y un nombre de fragmento de código y extraer todos
+los fragmentos de código del archivo con el nombre dado expandiendo las
+referencias a otros fragmentos.
 
-# (`tangle.scm`)
-
-Esta es la implementación del procedimiento `tangle`, este tiene el objetivo de tomar un archivo de entrada y un nombre de fragmento de código y extraer todos los fragmentos de código del archivo con el nombre dado expandiendo las referencias a otros fragmentos.
-
-Esta extracción de código es vaciada en un archivo nombrado como el nombre del fragmento dado.
-
+Esta extracción de código es vaciada en un archivo nombrado como el nombre del
+fragmento dado.
 |#
 
 (load "lib/utils.scm")
 (load "lib/input.scm")
 (load "lib/parcomb.scm")
-#||#
 
 (define (tangle ifilename cname)
   (pipe #f
         (markup ifilename)
         (flatten-code-content cname)
         (dump-flat-content cname)))
-#||#
 
-
-#|
-
-## ***Etapa `flatten-code-content`***
-
-En esta etapa de toma una lista de fragmentos y a partir del nombre de un fragmento de código `cname` se concatena y aplana de manera recursiva el contenido de los códigos relevantes a `cname`.
-
-|#
-
+;;; En esta etapa de toma una lista de fragmentos y a partir del nombre de un
+;;; fragmento de código `cname` se concatena y aplana de manera recursiva el
+;;; contenido de los códigos relevantes a `cname`.
 (define ((flatten-code-content cname) chunks)
   (let ((code-chunks (filter code? chunks)))
     (expand-code-content-refs (append-code-content cname code-chunks)
                               code-chunks 0)))
-#||#
 
-#|
-
-El siguiente procedimiento se encarga únicamente de concatenar el contenido de los códigos relevantes al nombre `cname`.
-
-|#
-
+;;; El siguiente procedimiento se encarga únicamente de concatenar el contenido de
+;;; los códigos relevantes al nombre `cname`.
 (define (append-code-content cname code-chunks)
   (define content
     (apply append (map code-content
@@ -50,14 +37,9 @@ El siguiente procedimiento se encarga únicamente de concatenar el contenido de 
   (if (zero? len)
       (error "No chunk is named" cname)
       (drop-right content 1)))
-#||#
 
-#|
-
-El siguiente procedimiento expande las referencias de un contenido concatenado tomando en cuenta las columnas en las que inician las referencias.
-
-|#
-
+;;; El siguiente procedimiento expande las referencias de un contenido concatenado
+;;; tomando en cuenta las columnas en las que inician las referencias.
 (define (expand-code-content-refs content code-chunks indent-spaces)
   (define indent-str (make-string indent-spaces #\space))
   (let recur ((content content)
@@ -76,50 +58,29 @@ El siguiente procedimiento expande las referencias de un contenido concatenado t
                            (recur xs col))))
                 (else
                  (error "Malformed code content" content)))))))
-#||#
 
-
-#|
-
-## ***Etapa `dump-flat-content`***
-
-En esta etapa se escribe a un archivo un contenido sin referencias, es decir, una lista compuesta únicamente de cadenas de caracteres o del caracter `#\newline`.
-
-|#
-
+;;; En esta etapa se escribe a un archivo un contenido sin referencias, es decir,
+;;; una lista compuesta únicamente de cadenas de caracteres o del caracter
+;;; `#\newline`.
 (define ((dump-flat-content ofilename) content)
   (with-output-to-file ofilename
     (lambda ()
       (for-each display content))))
-#||#
 
-#|
-
-## ***Etapa `markup`***
-
-Esta etapa es la más complicada de todo el programa, se encarga de leer un archivo con la sintaxis de `sweb` y regresar la representación interna del programa como una lista de fragmentos.
-
-|#
-
+;;; Esta etapa es la más complicada de todo el programa, se encarga de leer un
+;;; archivo con la sintaxis de `sweb` y regresar la representación interna del
+;;; programa como una lista de fragmentos.
 (define ((markup ifilename) anything)
   (parse (tokenize (open-input-from-file ifilename))))
-#||#
 
-#|
-
-### ***Análisis léxico***
-
-Primero se tokeniza la entrada, esto se logra identificando que caracteres de la entrada conforman tokens, nuevas líneas o texto.
-
-|#
-
+;;; Primero se tokeniza la entrada, esto se logra identificando que caracteres de la
+;;; entrada conforman tokens, nuevas líneas o texto.
 (define token-newline ':token-newline)
 (define token-lbracks ':token-lbracks)
 (define token-rbreqs  ':token-rbreqs)
 (define token-rbracks ':token-rbracks)
 (define token-at      ':token-at)
 (define token-def     ':token-def)
-#||#
 
 (define (tokenize in)
   (if (input-null? in)
@@ -134,7 +95,6 @@ Primero se tokeniza la entrada, esto se logra identificando que caracteres de la
                (receive (lis in) (input-break special? (input-cdr in))
                  (input-cons (list->string (cons ch lis))
                              (tokenize in))))))))
-#||#
 
 (define *string-token-map*
   `(("\n"     . ,token-newline)
@@ -165,15 +125,10 @@ Primero se tokeniza la entrada, esto se logra identificando que caracteres de la
                       (input-take in (string-length str)))
               (car entries)
               (loop (cdr entries)))))))
-#||#
 
-
-#|
-
-Los siguientes procedimientos son algoritmos para entradas análogos a los procedimientos `take`, `drop` y `break` especificados para listas en [SRFI-1](http://srfi.schemers.org/srfi-1/srfi-1.html).
-
-|#
-
+;;; Los siguientes procedimientos son algoritmos para entradas análogos a los
+;;; procedimientos `take`, `drop` y `break` especificados para listas en
+;;; [SRFI-1](http://srfi.schemers.org/srfi-1/srfi-1.html).
 (define (input-take in n)
   (if (or (zero? n) (input-null? in))
       '()
@@ -193,13 +148,11 @@ Los siguientes procedimientos son algoritmos para entradas análogos a los proce
         (values (reverse nots) rest)
         (loop (cons (input-car rest) nots)
               (input-cdr rest)))))
-#||#
 
 #|
-
-### ***Análisis sintáctico***
-
-El parseo de los tokens se logra programando la gramática de los programas con sintaxis de `sweb`, la especificación de la gramática con la sintaxis de `lib/parcomb.scm` es:
+El parseo de los tokens se logra programando la gramática de los programas con
+sintaxis de `sweb`, la especificación de la gramática con la sintaxis de
+`lib/parcomb.scm` es:
 
 ```
 <program> => (:+: (:alt: <docs> <code>))
@@ -235,10 +188,11 @@ El parseo de los tokens se logra programando la gramática de los programas con 
                        (:eq: token-rbracks))
 ```
 
-La implementación concreta de la gramática implementa la construcción de la representación interna usando envolturas de los éxitos de parseo y la construcción de un árbol de razones por las que el parseo pudo fallar usando envolturas de las razones de fallo de parseo.
-
+La implementación concreta de la gramática implementa la construcción de la
+representación interna usando envolturas de los éxitos de parseo y la
+construcción de un árbol de razones por las que el parseo pudo fallar usando
+envolturas de las razones de fallo de parseo.
 |#
-
 (define (parse tks)
   (<program> tks
              (lambda (s)
@@ -249,22 +203,15 @@ La implementación concreta de la gramática implementa la construcción de la r
                (display "THE PARSING PROCESS FAILED\n")
                (display "==========================\n\n")
                (display "Here is the reason tree of why it may have failed:\n")
-               ;; (pp (why-failed f))
                (dump-error-tree (why-failed f))
                (display "\nHere is a textual representation of the pending input:\n")
                (display "---------- input starts here ----------\n")
                (dump-detokenized (pending-input f))
                (display "----------- input ends here -----------\n")
                (error "Parsing failed"))))
-#||#
 
-
-#|
-
-El siguiente procedimiento revierte la tokenización para facilitar la lectura del archivo que falla parsear.
-
-|#
-
+;;; El siguiente procedimiento revierte la tokenización para facilitar la
+;;; lectura del archivo que falla parsear.
 (define (dump-detokenized tks)
   (unless (input-null? tks)
     (let ((tk  (input-car tks)))
@@ -280,14 +227,9 @@ El siguiente procedimiento revierte la tokenización para facilitar la lectura d
             ((string=? "%def " tk)  (display "@%def "))
             (else                   (display tk)))
       (dump-detokenized (input-cdr tks)))))
-#||#
 
-#|
-
-El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de fallo.
-
-|#
-
+;;; El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de
+;;; fallo.
 (define (dump-error-tree err)
   (define indent-factor 2)
   (define (display-error-lvl err lvl)
@@ -331,11 +273,9 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
   (for-each (lambda (x)
               (display-error-lvl x 0))
             err))
-#||#
 
 (define-parser <program>
   (:+: (:alt: <docs> <code>)))
-#||#
 
 (define-parser <code>
   (wrap-code (:seq: (wrap-code-lbracks (:eq: token-lbracks))
@@ -395,13 +335,11 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
 
 (define wrap-code-lines
   (:><: (lambda (match) (list match)) id))
-#||#
 
 (define (string-spaces? x)
   (and (string? x)
        (not (string=? "" x))
        (string=? "" (string-trim x))))
-#||#
 
 (define-parser <code-lines>
   (:alt: (:seq: (:*: (:alt: (:pred: string?) <refs>))
@@ -457,7 +395,6 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
         (lambda (why)
           (list (cons "missing a new line at the end of a @ %def line"
                       why)))))
-#||#
 
 (define-parser <refs>
   (wrap-refs (:seq: (wrap-refs-lbrack (:eq: token-lbracks))
@@ -487,7 +424,6 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
         (lambda (why)
           (list (cons "bad refs ending, there must be just text and then >>"
                       why)))))
-#||#
 
 (define-parser <docs>
   (wrap-docs (:alt: (:seq: (wrap-docs-at (:eq: token-at))
@@ -538,37 +474,6 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
         (lambda (why)
           (list (cons "missing a new line in chunk content"
                       why)))))
-#||#
-
-#|
-
-### ***Representación de fragmentos***
-
-|#
-
-(define (make-code name defs content)
-  (list ':code name defs content))
-
-(define (code? x)
-  (and (list? x)
-       (eq? ':code (car x))
-       (= 4 (length x))
-       (string? (list-ref x 1))
-       (or (boolean? (list-ref x 2)) (list? (list-ref x 2)))
-       (list? (list-ref x 3))))
-
-(define (code-name code)
-  (assert (code? code))
-  (list-ref code 1))
-
-(define (code-defs code)
-  (assert (code? code))
-  (list-ref code 2))
-
-(define (code-content code)
-  (assert (code? code))
-  (list-ref code 3))
-#||#
 
 (define (make-docs content)
   (list ':docs content))
@@ -582,7 +487,6 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
 (define (docs-content docs)
   (assert (docs? docs))
   (list-ref docs 1))
-#||#
 
 (define (make-refs name)
   (list ':refs name))
@@ -596,4 +500,3 @@ El siguiente procedimiento imprime de manera "*bonita*" un árbol de razones de 
 (define (refs-name refs)
   (assert (refs? refs))
   (list-ref refs 1))
-#||#
