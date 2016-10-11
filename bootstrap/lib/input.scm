@@ -70,9 +70,11 @@ restringirse a usar las siguientes formas y procedimientos:
       (and (pair? x) (promise? (cdr x)))))
 
 (define (input-car in)
+  (assert* (input? in))
   (stream-car in))
 
 (define (input-cdr in)
+  (assert* (input? in))
   (stream-cdr in))
 
 (define (open-input-from-file filename)

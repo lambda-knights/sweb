@@ -118,7 +118,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
                   (lambda (f2)
                     (bad f2))))
           bad))
-  (fold-right :seq2: :succeed: pars))
+  (fold-right1 :seq2: :succeed: pars))
 
 (define (:alt: . pars)
   (define* ((:alt2: par1 par2) in ok bad)
@@ -131,7 +131,7 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
                     (bad (failure (append (why-failed f1)
                                           (why-failed f2))
                                   in)))))))
-  (fold-right :alt2: :fail: pars))
+  (fold-right1 :alt2: :fail: pars))
 
 (define (:*: par)
   (define (par* in ok bad)
@@ -174,15 +174,15 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
        (eq? 'failure (vector-ref x 0))))
 
 (define (success-match s)
-  (assert (success? s))
+  (assert* (success? s))
   (vector-ref s 1))
 
 (define (why-failed f)
-  (assert (failure? f))
+  (assert* (failure? f))
   (vector-ref f 1))
 
 (define (pending-input r)
-  (assert (or (success? r) (failure? r)))
+  (assert* (or (success? r) (failure? r)))
   (vector-ref r 2))
 
 (define-syntax parser

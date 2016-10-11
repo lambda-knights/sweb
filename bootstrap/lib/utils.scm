@@ -8,6 +8,18 @@
     ((define* name value)
      (define name value))))
 
+(define-syntax assert*
+  (syntax-rules ()
+    ((assert* condition)
+     (unless condition
+       (error "Assertion failed" 'condition)))))
+
+(define (fold-right1 kons knil lis)
+  (if (null? lis)
+      knil
+      (kons (car lis)
+            (fold-right1 kons knil (cdr lis)))))
+
 (define (id x) x)
 
 (define* ((constant x) y) x)
