@@ -475,6 +475,29 @@ envolturas de las razones de fallo de parseo.
           (list (cons "missing a new line in chunk content"
                       why)))))
 
+(define (make-code name defs content)		
+  (list ':code name defs content))		
+		
+(define (code? x)		
+  (and (list? x)		
+       (eq? ':code (car x))		
+       (= 4 (length x))		
+       (string? (list-ref x 1))		
+       (or (boolean? (list-ref x 2)) (list? (list-ref x 2)))		
+       (list? (list-ref x 3))))		
+		
+(define (code-name code)		
+  (assert (code? code))		
+  (list-ref code 1))		
+		
+(define (code-defs code)		
+  (assert (code? code))		
+  (list-ref code 2))		
+		
+(define (code-content code)		
+  (assert (code? code))		
+  (list-ref code 3))
+
 (define (make-docs content)
   (list ':docs content))
 
