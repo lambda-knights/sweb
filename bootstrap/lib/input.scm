@@ -77,6 +77,26 @@ restringirse a usar las siguientes formas y procedimientos:
   (assert* (input? in))
   (stream-cdr in))
 
+(define (input-take in n)
+  (if (or (zero? n) (input-null? in))
+      '()
+      (cons (input-car in)
+            (input-take (input-cdr in) (- n 1)))))
+
+(define (input-drop in n)
+  (if (or (zero? n) (input-null? in))
+      in
+      (input-drop (input-cdr in) (- n 1))))
+
+(define (input-break pred in)
+  (let loop ((nots '())
+             (rest in))
+    (if (or (input-null? rest)
+            (pred (input-car rest)))
+        (values (reverse nots) rest)
+        (loop (cons (input-car rest) nots)
+              (input-cdr rest)))))
+
 (define (open-input-from-file filename)
   (define ip (open-input-file filename))
   (%input-port->input% ip))
