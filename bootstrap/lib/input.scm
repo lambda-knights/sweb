@@ -66,8 +66,7 @@ restringirse a usar las siguientes formas y procedimientos:
   (stream-null? x))
 
 (define (input? x)
-  (or (input-null? x)
-      (and (pair? x) (promise? (cdr x)))))
+  (stream? x))
 
 (define (input-car in)
   (assert* (input? in))

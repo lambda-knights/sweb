@@ -78,6 +78,15 @@
                           (= x (car lis)))
                         (cdr lis))))))
 
+(define (filename-remove-extension filename)
+  (let loop ((lis (reverse (string->list filename))))
+    (cond ((null? lis)
+           filename)
+          ((char=? #\. (car lis))
+           (list->string (reverse (cdr lis))))
+          (else
+           (loop (cdr lis))))))
+
 (define (id x) x)
 
 (define* ((constant x) y) x)
