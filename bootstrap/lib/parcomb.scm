@@ -89,6 +89,23 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
 (define :eqv: (:cmp: eqv?))
 (define :eq: (:cmp: eq?))
 
+(define* (((:cmps: =) x . xs) in ok bad)
+  (cond ((input-null? in)
+         (:nempty: in ok bad))
+        ((or (= x (input-car in))
+             (member (input-car in) xs =))
+         (ok (success (list (input-car in))
+                      (input-cdr in))))
+        (else
+         (bad (failure `(("x ≠ y"
+                          (("x in:" . ,(cons x xs))
+                           ("y is:" . ,(input-car in))
+                           ("= is:" . ,=)))))))))
+
+(define :equals: (:cmps: equal?))
+(define :eqvs: (:cmps: eqv?))
+(define :eqs: (:cmps: eq?))
+
 (define* (((:ncmp: =) x) in ok bad)
   (cond ((input-null? in)
          (:nempty: in ok bad))
@@ -105,6 +122,24 @@ Los combinadores de parsers son procedimientos que toman como argumentos a parse
 (define :nequal: (:ncmp: equal?))
 (define :neqv: (:ncmp: eqv?))
 (define :neq: (:ncmp: eq?))
+
+(define* (((:ncmps: =) x . xs) in ok bad)
+  (cond ((input-null? in)
+         (:nempty: in ok bad))
+        ((or (= x (input-car in))
+             (member (input-car in) xs =))
+         (bad (failure `(("x = y"
+                          (("x in:" . ,(cons x xs))
+                           ("y is:" . ,(input-car in))
+                           ("= is:" . ,=))))
+                       in)))
+        (else
+         (ok (success (list (input-car in))
+                      (input-cdr in))))))
+
+(define :nequals: (:ncmps: equal?))
+(define :neqvs: (:ncmps: eqv?))
+(define :neqs: (:ncmps: eq?))
 
 (define (:seq: . pars)
   (define* ((:seq2: par1 par2) in ok bad)
