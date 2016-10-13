@@ -135,7 +135,37 @@
 
 ;;; Parsing
 (define (sweb-parse token-lis)
-  'TODO)
+  (<sweb> token-lis pp error))
+
+(define-parser <sweb>
+  (wrap-sweb
+   (:seq: <limbo> (:*: <section>))))
+
+(define-parser <limbo>
+  (wrap-limbo
+   (:*: (:pred: (lambda (x)
+                  (not (or (eq? x tok-@)
+                           (eq? x tok-@*))))))))
+
+(define-parser <section>
+  (wrap-section
+   (:seq: (:alt: (:eq: tok-@) (:eq: tok-@*))
+          <limbo>)))
+
+(define (generic-wrapper tag reason)
+  (:><: (lambda (match)
+          `((,tag ,match)))
+        (lambda (why)
+          `((,reason . ,why)))))
+
+(define wrap-sweb
+  (generic-wrapper 'sweb "malformed sweb program"))
+
+(define wrap-limbo
+  (generic-wrapper 'limbo "malformed limbo"))
+
+(define wrap-section
+  (generic-wrapper 'section "malformed section"))
 
 ;;; SWEB structure
 (define (make-sweb program name)
